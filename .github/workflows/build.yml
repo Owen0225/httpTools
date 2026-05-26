@@ -1,0 +1,71 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  windows-build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Clone vcpkg
+        shell: powershell
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git "$env:RUNNER_TEMP\vcpkg"
+          & "$env:RUNNER_TEMP\vcpkg\bootstrap-vcpkg.bat"
+
+      - name: Install curl
+        shell: powershell
+        run: |
+          & "$env:RUNNER_TEMP\vcpkg\vcpkg.exe" install curl[schannel]:x64-windows
+
+      - name: Build and test
+        shell: powershell
+        env:
+          VCPKG_ROOT: ${{ runner.temp }}\vcpkg
+        run: |
+          powershell -ExecutionPolicy Bypass -File .\scripts\build-ci.ps1 -Target tests -Triplet x64-windows
+
+      - name: Build release
+        shell: powershell
+        env:
+          VCPKG_ROOT: ${{ runner.temp }}\vcpkg
+        run: |
+          powershell -ExecutionPolicy Bypass -File .\scripts\build-ci.ps1 -Target release -Triplet x64-windows
+
+      - name: Restore signing certificate
+        if: ${{ secrets.WIN_SIGN_PFX_BASE64 != '' && secrets.WIN_SIGN_PFX_PASSWORD != '' }}
+        shell: powershell
+        run: |
+          [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\codesign.pfx", [Convert]::FromBase64String("${{ secrets.WIN_SIGN_PFX_BASE64 }}"))
+
+      - name: Sign release binary
+        if: ${{ secrets.WIN_SIGN_PFX_BASE64 != '' && secrets.WIN_SIGN_PFX_PASSWORD != '' }}
+        shell: powershell
+        run: |
+          powershell -ExecutionPolicy Bypass -File .\scripts\sign-release.ps1 `
+            -ExePath .\build\ci\release\smtpTool.exe `
+            -PfxPath "$env:RUNNER_TEMP\codesign.pfx" `
+            -PfxPassword "${{ secrets.WIN_SIGN_PFX_PASSWORD }}"
+
+      - name: Package release
+        shell: powershell
+        run: |
+          powershell -ExecutionPolicy Bypass -File .\scripts\package-release.ps1 -ReleaseDir .\build\ci\release -Version 1.0.0
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: smtpTool-release-windows
+          path: |
+            build/ci/release/smtpTool.exe
+            build/ci/release/libcurl.dll
+            build/ci/release/README.txt
+            build/ci/smtpTool-1.0.0-windows-x64.zip
