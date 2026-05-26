@@ -55,7 +55,7 @@ if ($Target -in @("release", "all")) {
     }
     Get-ChildItem -LiteralPath $releaseObjDir -File -ErrorAction SilentlyContinue | Remove-Item -Force
     $releaseCmd = @"
-"$vcvars" && rc /nologo /I "smtpToolApp" /I "assets" /fo "build\obj\release\version.res" "smtpToolApp\version.rc" && cl /nologo /std:c++20 /O2 /GL /Gy /EHsc /MT /DNDEBUG /DUNICODE /D_UNICODE /DWIN32 /D_WINDOWS /I "D:\C2\curl\include" /I "smtpToolCore" /I "smtpToolApp" "smtpToolCore\RawRequestParser.cpp" "smtpToolCore\CurlCommandParser.cpp" "smtpToolCore\CppCodeGenerator.cpp" "smtpToolCore\HttpExecutor.cpp" "smtpToolApp\AppMain.cpp" "smtpToolApp\MainWindow.cpp" "build\obj\release\version.res" /Fe:"build\release\smtpTool.exe" /link /LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO /RELEASE /DYNAMICBASE /NXCOMPAT /LIBPATH:"D:\C2\curl\build_rel\lib" libcurl_imp.lib Comctl32.lib Comdlg32.lib User32.lib Gdi32.lib
+"$vcvars" && rc /nologo /I "smtpToolApp" /I "assets" /fo "build\obj\release\version.res" "smtpToolApp\version.rc" && cl /nologo /std:c++20 /O2 /GL /Gy /EHsc /MT /DNDEBUG /DUNICODE /D_UNICODE /DWIN32 /D_WINDOWS /I "D:\C2\curl\include" /I "smtpToolCore" /I "smtpToolApp" "smtpToolCore\RawRequestParser.cpp" "smtpToolCore\CurlCommandParser.cpp" "smtpToolCore\CppCodeGenerator.cpp" "smtpToolCore\HttpExecutor.cpp" "smtpToolApp\AppMain.cpp" "smtpToolApp\MainWindow.cpp" "build\obj\release\version.res" /Fe:"build\release\smtpTool.exe" /link /LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO /RELEASE /DYNAMICBASE /NXCOMPAT /MANIFEST:EMBED /MANIFESTINPUT:"smtpToolApp\app.manifest" /LIBPATH:"D:\C2\curl\build_rel\lib" libcurl_imp.lib Comctl32.lib Comdlg32.lib User32.lib Gdi32.lib
 "@
     cmd /c $releaseCmd
     if ($LASTEXITCODE -ne 0) {

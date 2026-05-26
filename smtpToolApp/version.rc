@@ -1,7 +1,6 @@
 #include <winres.h>
 
 1 ICON "app-icon.ico"
-1 RT_MANIFEST "app.manifest"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION 1,0,0,0
