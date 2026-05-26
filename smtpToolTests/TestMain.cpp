@@ -104,13 +104,16 @@ int main()
 {
     try
     {
+        Expect(smtp::HttpExecutor::Initialize(), "libcurl initialization should succeed");
         RunTest("RawRequestParser parses raw requests", TestRawRequestParserParsesMethodUrlHeadersAndBody);
         RunTest("CurlCommandParser parses curl commands", TestCurlCommandParserParsesUrlHeadersMethodAndBody);
         RunTest("CppCodeGenerator emits an embeddable function", TestCodeGeneratorProducesHttpResultFunction);
         RunTest("HttpExecutor performs a real GET request", TestHttpExecutorPerformsRealGetRequest);
+        smtp::HttpExecutor::Cleanup();
     }
     catch (const std::exception& ex)
     {
+        smtp::HttpExecutor::Cleanup();
         std::cerr << "[FAIL] " << ex.what() << "\n";
         return 1;
     }

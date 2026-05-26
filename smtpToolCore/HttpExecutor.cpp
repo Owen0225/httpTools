@@ -25,6 +25,16 @@ size_t WriteHeaderCallback(char* data, size_t size, size_t nmemb, void* userData
 }
 }
 
+bool HttpExecutor::Initialize()
+{
+    return curl_global_init(CURL_GLOBAL_DEFAULT) == CURLE_OK;
+}
+
+void HttpExecutor::Cleanup()
+{
+    curl_global_cleanup();
+}
+
 HttpResult HttpExecutor::Execute(const HttpRequestConfig& config)
 {
     HttpResult result;
@@ -34,7 +44,6 @@ HttpResult HttpExecutor::Execute(const HttpRequestConfig& config)
         return result;
     }
 
-    curl_global_init(CURL_GLOBAL_DEFAULT);
     CURL* curl = curl_easy_init();
     if (curl == nullptr)
     {
