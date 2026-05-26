@@ -8,3 +8,4 @@ build/
 *.manifest
 *.res
 *.log
+!smtpToolApp/app.manifest
