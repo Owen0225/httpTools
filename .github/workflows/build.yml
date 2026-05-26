@@ -7,6 +7,9 @@ on:
 jobs:
   windows-build:
     runs-on: windows-2022
+    env:
+      WIN_SIGN_PFX_BASE64: ${{ secrets.WIN_SIGN_PFX_BASE64 }}
+      WIN_SIGN_PFX_PASSWORD: ${{ secrets.WIN_SIGN_PFX_PASSWORD }}
 
     steps:
       - name: Checkout
@@ -41,19 +44,19 @@ jobs:
           powershell -ExecutionPolicy Bypass -File .\scripts\build-ci.ps1 -Target release -Triplet x64-windows
 
       - name: Restore signing certificate
-        if: ${{ secrets.WIN_SIGN_PFX_BASE64 != '' && secrets.WIN_SIGN_PFX_PASSWORD != '' }}
+        if: ${{ env.WIN_SIGN_PFX_BASE64 != '' && env.WIN_SIGN_PFX_PASSWORD != '' }}
         shell: powershell
         run: |
-          [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\codesign.pfx", [Convert]::FromBase64String("${{ secrets.WIN_SIGN_PFX_BASE64 }}"))
+          [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\codesign.pfx", [Convert]::FromBase64String($env:WIN_SIGN_PFX_BASE64))
 
       - name: Sign release binary
-        if: ${{ secrets.WIN_SIGN_PFX_BASE64 != '' && secrets.WIN_SIGN_PFX_PASSWORD != '' }}
+        if: ${{ env.WIN_SIGN_PFX_BASE64 != '' && env.WIN_SIGN_PFX_PASSWORD != '' }}
         shell: powershell
         run: |
           powershell -ExecutionPolicy Bypass -File .\scripts\sign-release.ps1 `
             -ExePath .\build\ci\release\smtpTool.exe `
             -PfxPath "$env:RUNNER_TEMP\codesign.pfx" `
-            -PfxPassword "${{ secrets.WIN_SIGN_PFX_PASSWORD }}"
+            -PfxPassword "$env:WIN_SIGN_PFX_PASSWORD"
 
       - name: Package release
         shell: powershell
