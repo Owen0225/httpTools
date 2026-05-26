@@ -21,13 +21,13 @@ jobs:
       - name: Clone vcpkg
         shell: powershell
         run: |
-          git clone https://github.com/microsoft/vcpkg.git "$env:RUNNER_TEMP\vcpkg"
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git "$env:RUNNER_TEMP\vcpkg"
           & "$env:RUNNER_TEMP\vcpkg\bootstrap-vcpkg.bat"
 
       - name: Install curl
         shell: powershell
         run: |
-          & "$env:RUNNER_TEMP\vcpkg\vcpkg.exe" install curl[schannel]:x64-windows
+          & "$env:RUNNER_TEMP\vcpkg\vcpkg.exe" install curl:x64-windows --vcpkg-root "$env:RUNNER_TEMP\vcpkg"
 
       - name: Build and test
         shell: powershell
